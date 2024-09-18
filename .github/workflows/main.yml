@@ -22,9 +22,9 @@ jobs:
 
     - name: Copy and Zip Output
       run: |
-        mkdir ~/kernel_output
-        sudo cp -R Code/patch/cm4/20230630/out/* ~/kernel_output/
-        cd ~/kernel_output
+        mkdir $HOME/kernel_output
+        sudo cp -R Code/patch/cm4/20230630/out/* $HOME/kernel_output/
+        cd $HOME/kernel_output
         zip -r kernel-output.zip .
 
     - name: Create Release
@@ -37,7 +37,6 @@ jobs:
         release_name: Release ${{ github.run_number }}
         draft: false
         prerelease: false
-        
 
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
@@ -45,6 +44,16 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ~/kernel_output/kernel-output.zip
+        asset_path: ${{ runner.temp }}/kernel_output/kernel-output.zip
         asset_name: kernel-output.zip
         asset_content_type: application/zip
+
+    - name: Debug - List files
+      if: failure()
+      run: |
+        echo "Home directory contents:"
+        ls -R $HOME
+        echo "Workspace contents:"
+        ls -R ${{ github.workspace }}
+        echo "Temp directory contents:"
+        ls -R ${{ runner.temp }}
