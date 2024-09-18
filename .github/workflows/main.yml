@@ -1,0 +1,47 @@
+name: Build Raspberry Pi Kernel
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build Kernel
+      run: |
+        cd Code/patch/cm4/20230630
+        chmod +x run.sh
+        ./run.sh
+
+    - name: Zip Output
+      run: |
+        cd Code/patch/cm4/20230630/out
+        zip -r kernel-output.zip .
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}-${{ github.sha }}
+        release_name: Release ${{ github.ref }}-${{ github.sha }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./Code/patch/cm4/20230630/out/kernel-output.zip
+        asset_name: kernel-output.zip
+        asset_content_type: application/zip
