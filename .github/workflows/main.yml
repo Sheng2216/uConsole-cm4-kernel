@@ -1,4 +1,4 @@
-name: Build Raspberry Pi Kernel
+name: Build Raspberry Pi Kernel and Release
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-and-release:
     runs-on: ubuntu-latest
     
     steps:
@@ -27,27 +27,19 @@ jobs:
         cd $HOME/kernel_output
         zip -r kernel-output.zip .
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Release
+      uses: softprops/action-gh-release@v1
       with:
+        files: ${{ env.HOME }}/kernel_output/kernel-output.zip
         tag_name: release-${{ github.run_number }}
-        release_name: Release ${{ github.run_number }}
-        draft: false
-        prerelease: false
-
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
+        name: Kernel Build Release ${{ github.run_number }}
+        body: |
+          This is an automatically generated release for kernel build run number ${{ github.run_number }}.
+          
+          Included files:
+          - kernel-output.zip (contains all build artifacts)
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        # asset_path: ${{ env.HOME }}/kernel_output/kernel-output.zip
-        asset_path: $HOME/kernel_output/kernel-output.zip
-        asset_name: kernel-output.zip
-        asset_content_type: application/zip
 
     - name: Debug - List files
       if: failure()
@@ -58,3 +50,4 @@ jobs:
         ls -R ${{ github.workspace }}
         echo "Temp directory contents:"
         ls -R ${{ runner.temp }}
+        echo "GitHub run number: ${{ github.run_number }}"
