@@ -44,7 +44,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ env.HOME }}/kernel_output/kernel-output.zip
+        # asset_path: ${{ env.HOME }}/kernel_output/kernel-output.zip
+        asset_path: $HOME/kernel_output/kernel-output.zip
         asset_name: kernel-output.zip
         asset_content_type: application/zip
 
