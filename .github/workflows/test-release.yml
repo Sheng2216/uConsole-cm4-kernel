@@ -2,9 +2,9 @@ name: Test Release Process
 
 on:
   push:
-    tags:
-      - 'v*' # This will trigger the workflow on pushing tags starting with 'v'
-  workflow_dispatch: # This allows manual triggers
+    branches:
+      - main  # or master, depending on your default branch name
+  workflow_dispatch:
 
 jobs:
   build-and-release:
@@ -32,6 +32,14 @@ jobs:
         files: |
           sample-output.zip
           out/*
+        tag_name: release-${{ github.run_number }}
+        name: Release ${{ github.run_number }}
+        body: |
+          This is an automatically generated release for run number ${{ github.run_number }}.
+          
+          Included files:
+          - sample-output.zip
+          - Individual files from the 'out' directory
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -40,3 +48,4 @@ jobs:
       run: |
         echo "Current directory contents:"
         ls -R
+        echo "GitHub run number: ${{ github.run_number }}"
