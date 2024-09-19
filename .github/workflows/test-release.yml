@@ -1,0 +1,42 @@
+name: Test Release Process
+
+on:
+  push:
+    tags:
+      - 'v*' # This will trigger the workflow on pushing tags starting with 'v'
+  workflow_dispatch: # This allows manual triggers
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Create sample files
+      run: |
+        mkdir -p out
+        echo "This is file 1" > out/file1.txt
+        echo "This is file 2" > out/file2.txt
+        dd if=/dev/urandom of=out/random.bin bs=1M count=10
+        echo "Build completed at $(date)" > out/build_info.txt
+
+    - name: Zip Output
+      run: |
+        cd out
+        zip -r ../sample-output.zip .
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          sample-output.zip
+          out/*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Debug - List files
+      if: failure()
+      run: |
+        echo "Current directory contents:"
+        ls -R
