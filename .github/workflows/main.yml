@@ -22,15 +22,15 @@ jobs:
 
     - name: Copy and Zip Output
       run: |
-        mkdir $HOME/kernel_output
-        sudo cp -R Code/patch/cm4/20230630/out/* $HOME/kernel_output/
-        cd $HOME/kernel_output
+        mkdir ${{ github.workspace }}/kernel_output
+        sudo cp -R Code/patch/cm4/20230630/out/* ${{ github.workspace }}/kernel_output/
+        cd ${{ github.workspace }}/kernel_output
         zip -r kernel-output.zip .
 
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
-        files: ${{ env.HOME }}/kernel_output/kernel-output.zip
+        files: ${{ github.workspace }}/kernel_output/kernel-output.zip
         tag_name: release-${{ github.run_number }}
         name: Kernel Build Release ${{ github.run_number }}
         body: |
